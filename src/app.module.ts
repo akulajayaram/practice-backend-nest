@@ -6,10 +6,11 @@ import { ApiModule } from './app/api.module';
 // import { configuration } from './core/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './database/typeorm/typeorm.service';
+import { configuration } from './core/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ load: [configuration], isGlobal: true }),
     TypeOrmModule.forRootAsync({ useClass: TypeOrmConfigService }),
     ApiModule,
   ],
