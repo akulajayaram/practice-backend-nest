@@ -1,5 +1,6 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import * as dotenv from 'dotenv';
+// dotenv.config();
+dotenv.config({ path: process.cwd() + '/core/env/.env.dev' });
 
 import { NestApplicationOptions, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
