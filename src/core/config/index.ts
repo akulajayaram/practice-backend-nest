@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 import { getEnvPath } from '../utils/env.helper';
 
-const envFilePath: string = getEnvPath(resolve(__dirname, '..', 'common/envs'));
+const envFilePath: string = getEnvPath(resolve(__dirname, '..', 'env'));
 
 config({ path: envFilePath });
 

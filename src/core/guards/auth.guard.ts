@@ -1,18 +1,36 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { TokenExpiredError } from 'jsonwebtoken';
+import { UserService } from 'src/app/user/user.service';
+import { errorMessages } from '../utils/errors';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
-    const request = context.switchToHttp().getRequest();
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly userService: UserService,
+  ) {}
 
-    const roles = request.user.roles;
-
-    if (roles.includes('admin')) {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    try {
+      const request = context.switchToHttp().getRequest();
+      const bearerToken = request.headers.authorization.split(' ')[1];
+      const payload = await this.jwtService.verifyAsync(bearerToken, {
+        secret: process.env.JWT_SECRET,
+      });
+      request.user = await this.userService.findById(payload.id, {
+        roles: true,
+      });
       return true;
+    } catch (error) {
+      if (error instanceof TokenExpiredError)
+        throw new UnauthorizedException(errorMessages.auth.expiredToken);
+      throw new UnauthorizedException(errorMessages.auth.invlidToken);
     }
-    return false;
   }
 }

@@ -9,3 +9,7 @@ export interface UserMetadata {
 export interface RequestModel extends Request {
   user: UserMetadata;
 }
+
+export type UserRelation = {
+  roles: boolean;
+};
