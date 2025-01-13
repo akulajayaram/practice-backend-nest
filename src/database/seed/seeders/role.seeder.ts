@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SeederInterface } from '../seeder.interface';
 import { Role } from 'src/database/entities/role.entity';
-import { RoleIds, Roles } from 'src/api/role/enum/role.enum';
+import { Roles, RoleIds } from 'src/core/utils/enum';
 
 @Injectable()
 export class RolesSeeder implements SeederInterface {

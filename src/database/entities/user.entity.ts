@@ -1,33 +1,55 @@
+import { Expose } from 'class-transformer';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
-  ManyToMany,
+  Entity,
   JoinTable,
-  OneToMany,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Product } from './product.entity';
 import { Role } from './role.entity';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  public id!: number;
+  @Expose()
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column({ type: 'varchar', length: 120, unique: true })
-  public email: string;
+  @Expose()
+  @Column({ type: 'varchar', length: 30 })
+  name: string;
+
+  @Expose()
+  @Column({ type: 'varchar', unique: true, length: 15 })
+  username: string;
+
+  @Expose()
+  @Column({ type: 'varchar', length: 40 })
+  email: string;
+
+  @Column({ type: 'date' })
+  dob: Date;
 
   @Column({ type: 'varchar' })
-  public password: string;
+  password: string;
 
+  @Expose()
   @ManyToMany(() => Role, (role) => role.users)
   @JoinTable({ name: 'user_roles' })
   public roles: Role[];
 
-  @OneToMany(() => Product, (product) => product.merchant)
-  public products: Product;
+  @Expose()
+  @Column({ type: 'enum', enum: ['m', 'f', 'u'] })
+  gender: string; /**
+   * m - male
+   * f - female
+   * u - unspecified
+   */
+
+  @Expose()
+  @Column({ default: true })
+  isActive: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
   public createdAt!: Date;
