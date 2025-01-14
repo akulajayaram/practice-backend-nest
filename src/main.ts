@@ -25,7 +25,7 @@ async function bootstrap() {
   app.use(helmet.contentSecurityPolicy());
 
   // Swagger setup
-  SwaggerModule.setup('api/v1', app, createDocument(app));
+  SwaggerModule.setup('api-docs', app, createDocument(app));
 
   // Global validation pipe
   app.useGlobalPipes(

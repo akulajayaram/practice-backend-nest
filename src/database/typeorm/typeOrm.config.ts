@@ -15,6 +15,9 @@ export const dataSourceOptions: DataSourceOptions = {
   entities: [`dist/**/*.entity.{ts,js}`],
   // migrations: ['dist/database/migration/history/*.js'],
   logger: 'simple-console',
+  ssl: {
+    rejectUnauthorized: false, // Use `true` for stricter validation with a valid CA certificate
+  },
   synchronize: false, // never use TRUE in production!
   logging: true, // for debugging in dev Area only
 };
