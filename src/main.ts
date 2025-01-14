@@ -9,12 +9,18 @@ import { SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { createDocument } from './swagger/swagger';
+import { ConfigService } from '@nestjs/config';
 
 const LISTEN_PORT = 3000;
 
 async function bootstrap() {
   const opts: NestApplicationOptions = {};
   const app = await NestFactory.create<NestExpressApplication>(AppModule, opts);
+  // Access config service
+  const configService = app.get(ConfigService);
+
+  // Get the port from the environment (via ConfigService)
+  const port = configService.get<number>('PORT') || LISTEN_PORT;
 
   // Security middleware
   app.disable('x-powered-by');
@@ -36,6 +42,6 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(process.env.PORT || LISTEN_PORT);
+  await app.listen(port);
 }
 bootstrap();

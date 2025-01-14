@@ -1,23 +1,18 @@
-import { config } from 'dotenv';
-import { resolve } from 'path';
-import { getEnvPath } from 'src/core/utils/env.helper';
+import { ConfigService } from '@nestjs/config';
 import { DataSourceOptions } from 'typeorm';
 
-const envFilePath: string = getEnvPath(resolve(__dirname, '../../..', 'env'));
-config({ path: envFilePath });
+const configService = new ConfigService();
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: process.env.DATABASE_HOST,
-  port: parseInt(process.env.DATABASE_PORT, 10),
-  database: process.env.DATABASE_NAME,
-  username: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  entities: [`dist/**/*.entity.{ts,js}`],
-  // migrations: ['dist/database/migration/history/*.js'],
-  logger: 'simple-console',
+  host: configService.get<string>('DATABASE_HOST'),
+  port: configService.get<number>('DATABASE_PORT'),
+  database: configService.get<string>('DATABASE_NAME'),
+  username: configService.get<string>('DATABASE_USER'),
+  password: configService.get<string>('DATABASE_PASSWORD'),
+  entities: ['dist/**/*.entity.{ts,js}'],
   ssl: {
-    rejectUnauthorized: false, // Use `true` for stricter validation with a valid CA certificate
+    rejectUnauthorized: false, // Adjust based on your environment
   },
-  synchronize: false, // never use TRUE in production!
-  logging: true, // for debugging in dev Area only
+  synchronize: false, // Never use true in production
+  logging: true, // Enable only in development
 };
