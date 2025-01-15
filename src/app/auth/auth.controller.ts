@@ -93,6 +93,38 @@ export class AuthController {
     return this.authService.refreshToken(body.refreshToken, req.ip);
   }
 
+  @Post('logout')
+  @ApiBearerAuth()
+  @ApiResponse({
+    status: 200,
+    description: 'Logout successful.',
+    schema: {
+      example: {
+        message: 'Logout successful',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized or invalid token.',
+  })
+  async logout(@Body() body: { refreshToken: string }, @Request() req) {
+    if (!body.refreshToken) {
+      throw new HttpException(
+        'Refresh token is required',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
+
+    await this.authService.logout(body.refreshToken, userId);
+    return { message: 'Logout successful' };
+  }
+
   @Auth()
   @Post('profile')
   @ApiBearerAuth()

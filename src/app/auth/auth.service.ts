@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -65,5 +70,17 @@ export class AuthService {
 
   async validateUser(username: string, password: string): Promise<any> {
     return this.userService.validateUser(username, password);
+  }
+
+  async logout(refreshToken: string, userId: string): Promise<void> {
+    const token = await this.refreshTokenRepository.findOne({
+      where: { token: refreshToken, user: { id: userId } },
+    });
+
+    if (!token) {
+      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+    }
+
+    await this.refreshTokenRepository.delete({ id: token.id });
   }
 }
