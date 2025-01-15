@@ -8,7 +8,7 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Auth } from 'src/core/decorators/auth.decorator';
-import { RoleIds } from 'src/core/utils/enum';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @UsePipes(
   new ValidationPipe({
@@ -23,8 +23,9 @@ import { RoleIds } from 'src/core/utils/enum';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Auth(RoleIds.Admin, RoleIds.User)
+  @Auth()
   @Post()
+  @ApiBearerAuth()
   async createUser(@Body() createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
   }

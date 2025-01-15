@@ -5,13 +5,13 @@ import { SwaggerConfig } from './swagger.interface';
  * Change this to suit your app!
  */
 export const SWAGGER_CONFIG: SwaggerConfig = {
-  title: 'Nestjs Backend Service',
-  description: 'Nestjs api ',
-  version: '1.0',
-  tags: [],
+  title: 'E-commerce API',
+  description: 'API documentation for the E-commerce platform.',
+  version: '1.0.0',
   contact: {
-    name: '',
-    url: '',
-    email: '',
+    name: 'Tech Support',
+    url: 'https://ecommerce.com/support',
+    email: 'support@ecommerce.com',
   },
+  tags: ['Auth', 'User', 'Products'],
 };

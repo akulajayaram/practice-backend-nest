@@ -5,10 +5,12 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Role } from './role.entity';
+import { RefreshToken } from './refresh-token.entity';
 
 @Entity()
 export class User {
@@ -46,6 +48,9 @@ export class User {
    * f - female
    * u - unspecified
    */
+
+  @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
+  refreshTokens: RefreshToken[];
 
   @Expose()
   @Column({ default: true })
