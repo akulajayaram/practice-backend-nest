@@ -43,7 +43,6 @@ export class UserService {
   async validateUser(username: string, password: string): Promise<User | null> {
     console.log(username, password, 'ppppp');
     const user = await this.userRepository.findOne({ where: { username } });
-    console.log(user, 'userrrrrrrrrr');
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }

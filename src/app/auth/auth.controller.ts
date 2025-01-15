@@ -7,6 +7,7 @@ import {
   HttpStatus,
   UsePipes,
   ValidationPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { ApiTags, ApiBody, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -27,6 +28,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @HttpCode(200)
   @ApiBody({
     description: 'User login credentials',
     schema: {
@@ -68,6 +70,7 @@ export class AuthController {
   }
 
   @Post('refresh-token')
+  @HttpCode(200)
   @ApiBody({
     description: 'Refresh token payload',
     schema: {
@@ -94,6 +97,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @HttpCode(200)
   @ApiBearerAuth()
   @ApiResponse({
     status: 200,
@@ -126,6 +130,7 @@ export class AuthController {
   }
 
   @Auth()
+  @HttpCode(200)
   @Post('profile')
   @ApiBearerAuth()
   @ApiResponse({
