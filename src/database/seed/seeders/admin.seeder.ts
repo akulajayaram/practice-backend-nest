@@ -4,8 +4,8 @@ import { Repository, EntityManager } from 'typeorm';
 import { SeederInterface } from '../seeder.interface';
 import { hash } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { User } from 'src/database/entities/user.entity';
-import { Role } from 'src/database/entities/role.entity';
+import { Role } from '../../entities/role.entity';
+import { User } from '../../entities/user.entity';
 
 @Injectable()
 export class AdminSeeder implements SeederInterface {
@@ -16,33 +16,43 @@ export class AdminSeeder implements SeederInterface {
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
   ) {}
-
   async seed() {
     const data: Partial<User> = await this.generateData();
+    console.log(data, 'data'); // Inspect generated data
     await this.entityManager.transaction(async (transactionalEntityManager) => {
       const result = await transactionalEntityManager.upsert(User, data, {
         conflictPaths: ['email'],
       });
+      console.log(result, 'result');
       const adminUser = await transactionalEntityManager
         .getRepository(User)
         .findOne({
           where: {
-            id: result.raw[0].id,
+            id: result.raw[0]?.id,
           },
         });
-      adminUser.roles = data.roles;
-      await transactionalEntityManager.save(adminUser);
+      console.log(adminUser, 'adminUser');
+      if (adminUser) {
+        adminUser.roles = data.roles;
+        await transactionalEntityManager.save(adminUser);
+      }
     });
   }
 
-  async generateData(): Promise<Partial<User>> {
-    const hashedPassword = await hash(
-      this.config.get<string>('adminUser.password'),
-      10,
-    );
+  private async generateData(): Promise<Partial<User>> {
+    const password = this.config.get<string>('ADMIN_PASSWORD');
+    if (!password) {
+      throw new Error(
+        'Admin password is not configured in the environment variables',
+      );
+    }
+
+    const hashedPassword = await hash(password, 10);
     const adminRoles = await this.rolesRepository.find();
     return {
-      email: this.config.get<string>('adminUser.email'),
+      name: 'Admin', // Add default name
+      username: 'admin', // Add default username
+      email: this.config.get<string>('ADMIN_EMAIL'),
       password: hashedPassword,
       roles: adminRoles,
     };

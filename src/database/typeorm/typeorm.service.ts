@@ -18,7 +18,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       ssl: {
         rejectUnauthorized: false, // Adjust based on your environment
       },
-      synchronize: false, // Never use true in production
+      synchronize: false, // Never use true in production // use true initially and then seed
       logging: true, // Enable only in development
     };
   }

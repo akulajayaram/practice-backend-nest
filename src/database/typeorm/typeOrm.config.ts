@@ -13,6 +13,6 @@ export const dataSourceOptions: DataSourceOptions = {
   ssl: {
     rejectUnauthorized: false, // Adjust based on your environment
   },
-  synchronize: false, // Never use true in production
+  synchronize: true, // Never use true in production
   logging: true, // Enable only in development
 };

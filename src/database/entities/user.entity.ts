@@ -11,8 +11,9 @@ import {
 } from 'typeorm';
 import { Role } from './role.entity';
 import { RefreshToken } from './refresh-token.entity';
+import { IsOptional } from 'class-validator';
 
-@Entity()
+@Entity('users')
 export class User {
   @Expose()
   @PrimaryGeneratedColumn('uuid')
@@ -27,11 +28,13 @@ export class User {
   username: string;
 
   @Expose()
-  @Column({ type: 'varchar', length: 40 })
+  @Column({ type: 'varchar', length: 40, unique: true })
   email: string;
 
-  @Column({ type: 'date' })
-  dob: Date;
+  @IsOptional() // Mark as optional for validation purposes
+  @Expose()
+  @Column({ type: 'date', nullable: true }) // Allow null values in the database
+  dob?: Date;
 
   @Column({ type: 'varchar' })
   password: string;
@@ -42,12 +45,8 @@ export class User {
   public roles: Role[];
 
   @Expose()
-  @Column({ type: 'enum', enum: ['m', 'f', 'u'] })
-  gender: string; /**
-   * m - male
-   * f - female
-   * u - unspecified
-   */
+  @Column({ type: 'enum', enum: ['m', 'f', 'u'], default: 'u' })
+  gender: string;
 
   @OneToMany(() => RefreshToken, (refreshToken) => refreshToken.user)
   refreshTokens: RefreshToken[];
@@ -55,6 +54,10 @@ export class User {
   @Expose()
   @Column({ default: true })
   isActive: boolean;
+
+  @Expose()
+  @Column({ default: false })
+  isDeleted: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
   public createdAt!: Date;

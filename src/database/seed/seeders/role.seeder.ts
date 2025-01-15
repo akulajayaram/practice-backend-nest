@@ -19,14 +19,10 @@ export class RolesSeeder implements SeederInterface {
     });
   }
 
-  generateData(): Partial<Role>[] {
-    const data: Partial<Role>[] = [];
-    Object.keys(Roles).forEach((key) => {
-      data.push({
-        id: RoleIds[key],
-        name: Roles[key],
-      });
-    });
-    return data;
+  private generateData(): Partial<Role>[] {
+    return Object.keys(Roles).map((key) => ({
+      id: RoleIds[key],
+      name: Roles[key],
+    }));
   }
 }
