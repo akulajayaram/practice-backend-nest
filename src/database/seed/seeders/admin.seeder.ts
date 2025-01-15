@@ -18,12 +18,10 @@ export class AdminSeeder implements SeederInterface {
   ) {}
   async seed() {
     const data: Partial<User> = await this.generateData();
-    console.log(data, 'data'); // Inspect generated data
     await this.entityManager.transaction(async (transactionalEntityManager) => {
       const result = await transactionalEntityManager.upsert(User, data, {
         conflictPaths: ['email'],
       });
-      console.log(result, 'result');
       const adminUser = await transactionalEntityManager
         .getRepository(User)
         .findOne({
@@ -31,7 +29,6 @@ export class AdminSeeder implements SeederInterface {
             id: result.raw[0]?.id,
           },
         });
-      console.log(adminUser, 'adminUser');
       if (adminUser) {
         adminUser.roles = data.roles;
         await transactionalEntityManager.save(adminUser);
