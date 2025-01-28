@@ -4,25 +4,25 @@ import {
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
 import { map, Observable } from 'rxjs';
 
 @Injectable()
-export class SucessResponseInterceptor implements NestInterceptor {
+export class SuccessResponseInterceptor implements NestInterceptor {
+  constructor(private readonly reflector: Reflector) {}
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const customMessage =
+      this.reflector.get<string>('message', context.getHandler()) || 'success';
+
     return next.handle().pipe(
-      map((data) => {
-        return {
-          isSuccess: true,
-          message: 'success',
-          data,
-          errorCode: null,
-          errors: [],
-        };
-      }),
+      map((data) => ({
+        isSuccess: true,
+        message: customMessage,
+        data,
+        errorCode: null,
+        errors: [],
+      })),
     );
   }
 }
-
-export const successObject = {
-  message: 'success',
-};

@@ -10,6 +10,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RefreshToken } from 'src/database/entities/refresh-token.entity';
 import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcrypt';
+import { User } from 'src/database/entities/user.entity';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -17,9 +20,13 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
+    private readonly mailerService: EmailService,
 
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+
   ) {}
 
   async login(user: any, device: string, ip: string) {
@@ -82,5 +89,42 @@ export class AuthService {
     }
 
     await this.refreshTokenRepository.delete({ id: token.id });
+  }
+
+  async register(name: string, email: string, password: string) {
+    // Check if email already exists
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
+    if (existingUser) {
+      throw new HttpException(
+        'Email has been used before.',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // Hash the password
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    // Create user data for activation token
+    const newUser = { name, email, password: passwordHash };
+
+    // Generate activation token
+    const activationToken = this.jwtService.sign(newUser, {
+      secret: this.config.get<string>('ACTIVATION_TOKEN_SECRET'),
+      expiresIn: '1h', // Set an expiration time for the token
+    });
+
+    // Generate activation URL
+    const clientUrl = this.config.get<string>('CLIENT_URL');
+    const activationUrl = `${clientUrl}/activate/${activationToken}`;
+
+    // Send activation email
+    await this.mailerService.sendRegistrationOtp({
+      to: email,
+      subject: 'Account Activation',
+      template: './activation', // Reference the template (e.g., ejs or handlebars)
+      context: { name, activationUrl },
+    });
   }
 }
