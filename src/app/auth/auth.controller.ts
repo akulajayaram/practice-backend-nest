@@ -13,11 +13,11 @@ import { ApiTags, ApiBody, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { ConfirmOtpDto } from './dto/confirm-otp.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { UserRegistrationDto } from './dto/user-registration.dto';
 import { SetMessage } from 'src/core/decorators/set-message.decorator';
 import { UserService } from '../user/user.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('Auth')
 @UsePipes(
@@ -177,9 +177,6 @@ export class AuthController {
     await this.authService.forgotPassword(forgotPasswordDto.email);
   }
 
-  @Post('activate')
-  async activateUser() {}
-
   // Confirm OTP (for password reset)
   @Post('confirm-otp')
   @HttpCode(200)
@@ -204,9 +201,16 @@ export class AuthController {
     },
   })
   @ApiResponse({ status: 400, description: 'Invalid OTP or expired' })
-  @SetMessage('OTP verified successfully')
+  @SetMessage('OTP confirmed, proceed with password reset')
   async confirmOtp(@Body() confirmOtpDto: ConfirmOtpDto) {
-    await this.authService.confirmOtp(confirmOtpDto.email, confirmOtpDto.otp);
+    const resetToken = await this.authService.confirmOtp(
+      confirmOtpDto.email,
+      confirmOtpDto.otp,
+    );
+
+    return {
+      resetToken,
+    };
   }
 
   @Post('activate')
@@ -240,5 +244,42 @@ export class AuthController {
       name: decoded.name,
       username: decoded.username,
     });
+  }
+
+  @Post('reset-password')
+  @HttpCode(200)
+  @ApiBody({
+    description: 'Reset password',
+    schema: {
+      type: 'object',
+      properties: {
+        resetToken: { type: 'string', example: 'jwt_reset_token_here' },
+        newPassword: { type: 'string', example: 'SecureP@ssword123' },
+      },
+      required: ['resetToken', 'newPassword'],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset successfully',
+    schema: {
+      example: {
+        message: 'Password reset successfully',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid token or password criteria not met',
+  })
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    await this.authService.resetPassword(
+      resetPasswordDto.resetToken,
+      resetPasswordDto.newPassword,
+    );
+
+    return {
+      message: 'Password reset successfully',
+    };
   }
 }

@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import {
+  SendResetPasswordOtpDto,
+  SendRegistrationUrlDto,
+} from '../auth/interfaces/send-mail.interface';
 // import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
@@ -28,23 +32,30 @@ export class EmailService {
     // });
   }
 
-  async sendRegistrationOtp(emailData): Promise<void> {
+  async sendRegistrationUrl(emailData: SendRegistrationUrlDto): Promise<void> {
     // Queue the email job
     await this.emailQueue.add('sendEmail', {
-      to:emailData.to,
-      subject: 'User Registration',
+      to: emailData.to,
+      subject: 'Account Activation',
       template: './otp',
-      context: { activationUrl },
+      context: {
+        name: emailData.context.name,
+        activationUrl: emailData.context.activationUrl,
+      },
     });
   }
 
-  async sendForgotPasswordEmail(to: string, resetLink: string): Promise<void> {
-    // Queue the email job
+  async sendResetPasswordOtp(
+    emailData: SendResetPasswordOtpDto,
+  ): Promise<void> {
     await this.emailQueue.add('sendEmail', {
-      to,
-      subject: 'Password Reset Request',
-      template: './forgot-password',
-      context: { resetLink },
+      to: emailData.to,
+      subject: 'Account Activation',
+      template: './otp',
+      context: {
+        name: emailData.context.name,
+        otp: emailData.context.otp,
+      },
     });
   }
 }

@@ -13,6 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { User } from 'src/database/entities/user.entity';
 import { EmailService } from '../email/email.service';
+import { randomInt } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -26,7 +27,6 @@ export class AuthService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-
   ) {}
 
   async login(user: any, device: string, ip: string) {
@@ -120,11 +120,76 @@ export class AuthService {
     const activationUrl = `${clientUrl}/activate/${activationToken}`;
 
     // Send activation email
-    await this.mailerService.sendRegistrationOtp({
+    await this.mailerService.sendRegistrationUrl({
       to: email,
-      subject: 'Account Activation',
-      template: './activation', // Reference the template (e.g., ejs or handlebars)
       context: { name, activationUrl },
     });
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
+    }
+
+    // Generate OTP
+    const otp = randomInt(100000, 999999).toString();
+
+    // Save OTP to user entity (with expiration time)
+    user.resetOtp = otp;
+    user.resetOtpExpiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+    await this.userRepository.save(user);
+
+    // Send OTP via email
+    await this.mailerService.sendResetPasswordOtp({
+      to: email,
+      context: { name: user.name, otp },
+    });
+  }
+
+  async confirmOtp(email: string, otp: string): Promise<string> {
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    if (!user || user.resetOtp !== otp || user.resetOtpExpiresAt < new Date()) {
+      throw new HttpException('Invalid OTP or expired', HttpStatus.BAD_REQUEST);
+    }
+
+    user.resetOtp = null;
+    user.resetOtpExpiresAt = null;
+    await this.userRepository.save(user);
+
+    const resetToken = this.jwtService.sign(
+      { email },
+      {
+        secret: this.config.get('RESET_TOKEN_SECRET'),
+        expiresIn: '15m',
+      },
+    );
+
+    return resetToken;
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    // Verify and decode the token
+    const decoded = this.jwtService.verify(token, {
+      secret: this.config.get('RESET_TOKEN_SECRET'),
+    });
+
+    // Find the user by email
+    const user = await this.userRepository.findOne({
+      where: { email: decoded.email },
+    });
+
+    if (!user) {
+      throw new HttpException('Invalid token', HttpStatus.BAD_REQUEST);
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // Update the user's password
+    user.password = hashedPassword;
+    await this.userRepository.save(user);
   }
 }

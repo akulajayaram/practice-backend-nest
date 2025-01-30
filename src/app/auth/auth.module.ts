@@ -6,12 +6,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RefreshToken } from 'src/database/entities/refresh-token.entity';
 import { AuthController } from './auth.controller';
+import { EmailModule } from '../email/email.module';
+import { User } from 'src/database/entities/user.entity';
 
 @Module({
   imports: [
     UserModule,
     ConfigModule,
-    TypeOrmModule.forFeature([RefreshToken]),
+    TypeOrmModule.forFeature([RefreshToken, User]),
     JwtModule.registerAsync({
       global: true,
       inject: [ConfigService], // Inject ConfigService for use in factory function
@@ -20,6 +22,7 @@ import { AuthController } from './auth.controller';
         signOptions: { expiresIn: '3h' },
       }),
     }),
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

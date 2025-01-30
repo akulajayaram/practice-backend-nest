@@ -4,6 +4,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Matches,
   MinLength,
@@ -46,4 +47,12 @@ export class CreateUserDto {
     one special character`,
   })
   password: string;
+
+  @IsOptional()
+  @IsString()
+  resetOtp: string = null;
+
+  @IsOptional()
+  @IsDateString()
+  resetOtpExpiresAt: Date = null;
 }

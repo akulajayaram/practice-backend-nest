@@ -59,6 +59,12 @@ export class User {
   @Column({ default: false })
   isDeleted: boolean;
 
+  @Column({ nullable: true })
+  resetOtp: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetOtpExpiresAt: Date;
+
   @CreateDateColumn({ type: 'timestamp' })
   public createdAt!: Date;
 
